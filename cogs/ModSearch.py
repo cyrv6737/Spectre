@@ -1,7 +1,7 @@
 from discord.ext import commands
 import requests, re
 import discord, asyncio
-from discord.ui import Button
+from time import sleep
 
 active_search = False
 
@@ -76,39 +76,40 @@ class ModSearch(commands.Cog):
             embed.set_thumbnail(url=mod['icon_url'])
             return embed
         
-        control_view = discord.ui.View()
-        prev_button = Button(label="Prev", style=discord.ButtonStyle.primary)
-        next_button = Button(label="Next", style=discord.ButtonStyle.primary)
-        stop_button = Button(label="Stop", style=discord.ButtonStyle.danger)
-        control_view.add_item(prev_button)
-        control_view.add_item(next_button)
-        control_view.add_item(stop_button)
-        
-        message = await ctx.send(embed=get_mod_embed(), view=control_view)
+        message = await ctx.send(embed=get_mod_embed())
         
         active_search = True
         
+        reactions = ['⏮️', '◀️', '▶️', '⏭️', '❌']
+        for reaction in reactions:
+            await message.add_reaction(reaction)
+            await asyncio.sleep(0.5) # Sleep for 500ms to hopefully avoid reactions getting placed out-of-order
+            
+        def check_react(reaction, user):
+            return user == ctx.author and str(reaction.emoji) in reactions
+        
         while True:
             try:
-                interaction, _ = await self.wait_for('button_click', timeout=30.0, check=lambda i: i.message.id == message.id)
-                async def button_callback(interaction, button):
-                    global active_search
-                    if button == prev_button:
-                        current_page = (current_page - 1) % len(pages)
-                    elif button == next_button:
-                        current_page = (current_page + 1) % len(pages)
-                    elif button == stop_button:
-                        active_search = False
-                        await message.delete()
-                        cancelled_message = await ctx.send("Search cancelled", ephemeral=True)
-                        await asyncio.sleep(5)
-                        await cancelled_message.delete()
-                        return
+                reaction, _ = await self.bot.wait_for('reaction_add', timeout=30.0, check=check_react)
                 
-                prev_button.callback = button_callback
-                next_button.callback = button_callback
-                stop_button.callback = button_callback
-                await message.edit(embed=get_mod_embed(), view=control_view)
+                if str(reaction.emoji) == '⏮️':
+                    current_page = 0
+                elif str(reaction.emoji) == '◀️':
+                    current_page = (current_page - 1) % len(pages)
+                elif str(reaction.emoji) == '▶️':
+                    current_page = (current_page + 1) % len(pages)
+                elif str(reaction.emoji) == '⏭️':
+                    current_page = len(pages) - 1
+                elif str(reaction.emoji) == '❌':
+                    active_search = False
+                    await message.delete()
+                    cancelled_message = await ctx.send("Search cancelled", ephemeral=True)
+                    await asyncio.sleep(5)
+                    await cancelled_message.delete()
+                    return
+                
+                await message.edit(embed=get_mod_embed())
+                await message.remove_reaction(reaction, ctx.author)
                 
             except asyncio.TimeoutError:
                 break

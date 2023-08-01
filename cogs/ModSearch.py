@@ -104,7 +104,7 @@ class ModSearch(commands.Cog):
                     active_search = False
                     await message.delete()
                     cancelled_message = await ctx.send("Search cancelled")
-                    await asyncio.sleep(10)
+                    await asyncio.sleep(5)
                     await cancelled_message.delete()
                     return
                 

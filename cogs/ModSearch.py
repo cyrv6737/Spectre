@@ -97,7 +97,9 @@ class ModSearch(commands.Cog):
                 elif str(reaction.emoji) == '❌':
                     active_search = False
                     await message.delete()
-                    await ctx.send("Search cancelled")
+                    cancelled_message = await ctx.send("Search cancelled")
+                    await asyncio.sleep(10)
+                    await cancelled_message.delete()
                     return
                 
                 await message.edit(embed=get_mod_embed())

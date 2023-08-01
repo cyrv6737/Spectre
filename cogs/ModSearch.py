@@ -42,7 +42,7 @@ class ModSearch(commands.Cog):
                 downloads = 0
                 for version in item['versions']:
                     downloads = downloads + version['downloads']
-                mods["result_" + str(i)] = {
+                mods[item['owner'] + "." + item['name']] = {
                     "name": item['name'].replace("_", " "),
                     "owner": item['owner'],
                     "icon_url": item['versions'][0]['icon'],

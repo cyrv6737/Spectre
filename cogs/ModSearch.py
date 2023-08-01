@@ -10,7 +10,7 @@ class ModSearch(commands.Cog):
         self.bot = bot 
         
     @commands.hybrid_command(description="Search Northstar Thunderstore for mods")
-    async def searchts(self, ctx, search_string: str):
+    async def modsearch(self, ctx, search_string: str):
         
         global active_search
         

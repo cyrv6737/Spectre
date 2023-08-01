@@ -15,13 +15,13 @@ class ModSearch(commands.Cog):
         global active_search
         
         if len(search_string) < 3:
-            character_warning = await ctx.send("Search must be at least 3 characters")
+            character_warning = await ctx.send("Search must be at least 3 characters", ephemeral=True)
             await asyncio.sleep(5)
             await character_warning.delete()
             return
         
         if active_search:
-            active_warning = await ctx.send("Please wait for the active search to timeout")
+            active_warning = await ctx.send("Please wait for the active search to timeout", ephemeral=True)
             await asyncio.sleep(5)
             await active_warning.delete()
             return
@@ -103,7 +103,7 @@ class ModSearch(commands.Cog):
                 elif str(reaction.emoji) == '❌':
                     active_search = False
                     await message.delete()
-                    cancelled_message = await ctx.send("Search cancelled")
+                    cancelled_message = await ctx.send("Search cancelled", ephemeral=True)
                     await asyncio.sleep(5)
                     await cancelled_message.delete()
                     return

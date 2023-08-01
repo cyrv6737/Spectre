@@ -88,10 +88,8 @@ class ModSearch(commands.Cog):
         
         active_search = True
         
-        while True:
-            try:
-                interaction, _ = await self.wait_for('button_click', timeout=30.0, check=lambda i: i.message.id == message.id)
-                async def button_callback(interaction, button):
+        
+        async def button_callback(interaction, button):
                     global active_search
                     if button == prev_button:
                         current_page = (current_page - 1) % len(pages)
@@ -104,10 +102,15 @@ class ModSearch(commands.Cog):
                         await asyncio.sleep(5)
                         await cancelled_message.delete()
                         return
-                
-                prev_button.callback = button_callback
-                next_button.callback = button_callback
-                stop_button.callback = button_callback
+                    
+        prev_button.callback = button_callback
+        next_button.callback = button_callback
+        stop_button.callback = button_callback
+        
+        while True:
+            try:
+                interaction, _ = await self.wait_for('button_click', timeout=30.0, check=lambda i: i.message.id == message.id)
+                interaction.defer()
                 await message.edit(embed=get_mod_embed(), view=control_view)
                 
             except asyncio.TimeoutError:

@@ -3,8 +3,6 @@ import requests, re
 import discord, asyncio
 from time import sleep
 
-#active_search = False
-
 class PaginationView(discord.ui.View):
     
     current_page : int = 0
@@ -53,19 +51,11 @@ class ModSearch(commands.Cog):
     @commands.hybrid_command(description="Search Northstar Thunderstore for mods")
     async def modsearch(self, ctx, search_string: str):
         
-        #global active_search
-        
         if len(search_string) < 3:
             character_warning = await ctx.send("Search must be at least 3 characters", ephemeral=True)
             await asyncio.sleep(5)
             await character_warning.delete()
             return
-        
-        #if active_search:
-        #    active_warning = await ctx.send("Please wait for the active search to timeout", ephemeral=True)
-        #    await asyncio.sleep(5)
-        #    await active_warning.delete()
-        #    return
         
         try:
             response = requests.get("https://northstar.thunderstore.io/api/v1/package/")
@@ -104,14 +94,10 @@ class ModSearch(commands.Cog):
         
         pages = list(sorted_mods_by_dl.keys())
         
-        #active_search = True
-        
         pagination_view = PaginationView()
         pagination_view.data_key = pages
         pagination_view.data = sorted_mods_by_dl
         await pagination_view.send(ctx)
-        
-        #active_search = False
         return
 
 

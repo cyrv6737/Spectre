@@ -15,13 +15,15 @@ class PaginationView(discord.ui.View):
     def create_embed(self, data, data_key):
         key = self.data_key[self.current_page]
         mod = self.data[key]
-        mod_embed_desc = f"By {mod['owner']}\n{mod['description']}\n\nLast updated on {mod['last_update']} (YY/MM/DD)\n{mod['total_dl']} Downloads\n{mod['ts_url']}"
+        mod_embed_desc = f"By {mod['owner']}\n{mod['description']}\n{mod['ts_url']}"
         embed_title = f"{mod['name']} ({self.current_page + 1}/{len(self.data_key)})"
+        embed_footer = f"{mod['total_dl']} Downloads | Last updated on {mod['last_update']} (YY/MM/DD)"
         embed = discord.Embed(
             title=embed_title,
             description=mod_embed_desc
         )
         embed.set_thumbnail(url=mod['icon_url'])
+        embed.set_footer(text=embed_footer)
         return embed
     
     async def update_message(self, data, data_key):

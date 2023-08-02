@@ -5,6 +5,40 @@ from time import sleep
 
 active_search = False
 
+class PaginationView(discord.ui.View):
+    
+    current_page : int = 0
+    
+    async def send(self, ctx):
+        self.from_message = await ctx.send(view=self)
+        
+    def create_embed(self, data, data_key):
+        key = self.data_key[self.current_page]
+        mod = self.data[key]
+        mod_embed_desc = f"By {mod['owner']}\n{mod['description']}\n\nLast updated on {mod['last_update']} (YY/MM/DD)\n{mod['total_dl']} Downloads\n{mod['ts_url']}"
+        embed_title = f"{mod['name']} ({self.current_page + 1}/{len(self.data_key)})"
+        embed = discord.Embed(
+            title=embed_title,
+            description=mod_embed_desc
+        )
+        embed.set_thumbnail(url=mod['icon_url'])
+        return embed
+    
+    async def update_message(self, data, data_key):
+        await self.message.edit(embed=self.create_embed(data, data_key), view=self)
+    
+    @discord.ui.button(label="Prev", style=discord.ButtonStyle.primary)
+    async def prev_button(self, interaction:discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer()
+        self.current_page -= 1
+        await self.update_message(self.data, self.data_key)
+    
+    @discord.ui.button(label="Next", style=discord.ButtonStyle.primary)
+    async def next_button(self, interaction:discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer()
+        self.current_page += 1
+        await self.update_message(self.data, self.data_key)
+
 class ModSearch(commands.Cog):
     def __init__(self, bot :commands.Bot) -> None:
         self.bot = bot 
@@ -62,59 +96,14 @@ class ModSearch(commands.Cog):
         sorted_mods_by_dl = dict(sorted(mods.items(), key=lambda item: item[1]['total_dl'], reverse=True))
         
         pages = list(sorted_mods_by_dl.keys())
-        current_page = 0
-        
-        def get_mod_embed():
-            key = pages[current_page]
-            mod = sorted_mods_by_dl[key]
-            mod_embed_desc = f"By {mod['owner']}\n{mod['description']}\n\nLast updated on {mod['last_update']} (YY/MM/DD)\n{mod['total_dl']} Downloads\n{mod['ts_url']}"
-            embed_title = f"{mod['name']} ({current_page + 1}/{len(pages)})"
-            embed = discord.Embed(
-                title=embed_title,
-                description=mod_embed_desc
-            )
-            embed.set_thumbnail(url=mod['icon_url'])
-            return embed
-        
-        message = await ctx.send(embed=get_mod_embed())
         
         active_search = True
         
-        reactions = ['⏮️', '◀️', '▶️', '⏭️', '❌']
-        for reaction in reactions:
-            await message.add_reaction(reaction)
-            await asyncio.sleep(0.5) # Sleep for 500ms to hopefully avoid reactions getting placed out-of-order
-            
-        def check_react(reaction, user):
-            return user == ctx.author and str(reaction.emoji) in reactions
+        pagination_view = PaginationView()
+        pagination_view.data_key = pages
+        pagination_view.data = sorted_mods_by_dl
+        await pagination_view.send(ctx)
         
-        while True:
-            try:
-                reaction, _ = await self.bot.wait_for('reaction_add', timeout=30.0, check=check_react)
-                
-                if str(reaction.emoji) == '⏮️':
-                    current_page = 0
-                elif str(reaction.emoji) == '◀️':
-                    current_page = (current_page - 1) % len(pages)
-                elif str(reaction.emoji) == '▶️':
-                    current_page = (current_page + 1) % len(pages)
-                elif str(reaction.emoji) == '⏭️':
-                    current_page = len(pages) - 1
-                elif str(reaction.emoji) == '❌':
-                    active_search = False
-                    await message.delete()
-                    cancelled_message = await ctx.send("Search cancelled", ephemeral=True)
-                    await asyncio.sleep(5)
-                    await cancelled_message.delete()
-                    return
-                
-                await message.edit(embed=get_mod_embed())
-                await message.remove_reaction(reaction, ctx.author)
-                
-            except asyncio.TimeoutError:
-                break
-            
-        await message.clear_reactions()
         active_search = False
         return
 

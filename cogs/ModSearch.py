@@ -6,8 +6,6 @@ class PaginationView(discord.ui.View):
     
     current_page : int = 1
     
-    mod_url : str = ""
-    
     async def send(self, ctx):
         self.message = await ctx.send(view=self)
         
@@ -29,9 +27,9 @@ class PaginationView(discord.ui.View):
     async def update_message(self, data, data_key):
         await self.message.edit(embed=self.create_embed(data, data_key), view=self)
     
-    @discord.ui.button(label="View Mod", style=discord.ButtonStyle.link, url=mod_url)
+    @discord.ui.button(label="View Mod", style=discord.ButtonStyle.link)
     async def link_button(self, interaction:discord.Interaction, button: discord.ui.Button):
-        pass
+        await self.send(self.mod_url, ephemeral=True)
     
     @discord.ui.button(label="Prev", style=discord.ButtonStyle.primary)
     async def prev_button(self, interaction:discord.Interaction, button: discord.ui.Button):

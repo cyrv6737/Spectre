@@ -9,13 +9,15 @@ class PaginationView(discord.ui.View):
     
     current_page : int = 0
     
+    mod_url : str = ""
+    
     async def send(self, ctx):
         self.message = await ctx.send(view=self)
         
     def create_embed(self, data, data_key):
         key = self.data_key[self.current_page]
         mod = self.data[key]
-        mod_embed_desc = f"By {mod['owner']}\n{mod['description']}\n{mod['ts_url']}"
+        mod_embed_desc = f"By {mod['owner']}\n{mod['description']}"
         embed_title = f"{mod['name']} ({self.current_page + 1}/{len(self.data_key)})"
         embed_footer = f"{mod['total_dl']} Downloads | Last updated on {mod['last_update']} (YY/MM/DD)"
         embed = discord.Embed(
@@ -24,10 +26,13 @@ class PaginationView(discord.ui.View):
         )
         embed.set_thumbnail(url=mod['icon_url'])
         embed.set_footer(text=embed_footer)
+        self.mod_url = mod['ts_url']
         return embed
     
     async def update_message(self, data, data_key):
         await self.message.edit(embed=self.create_embed(data, data_key), view=self)
+    
+    @discord.ui.button(label="View Mod", style=discord.ButtonStyle.link, url=mod_url)
     
     @discord.ui.button(label="Prev", style=discord.ButtonStyle.primary)
     async def prev_button(self, interaction:discord.Interaction, button: discord.ui.Button):

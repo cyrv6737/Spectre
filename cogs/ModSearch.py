@@ -29,7 +29,7 @@ class PaginationView(discord.ui.View):
     
     @discord.ui.button(label="View Mod", style=discord.ButtonStyle.link)
     async def link_button(self, interaction:discord.Interaction, button: discord.ui.Button):
-        await self.send(self.mod_url, ephemeral=True)
+        await interaction.response.send_message(self.mod_url, ephemeral=True)
     
     @discord.ui.button(label="Prev", style=discord.ButtonStyle.primary)
     async def prev_button(self, interaction:discord.Interaction, button: discord.ui.Button):

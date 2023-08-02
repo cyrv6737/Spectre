@@ -1,7 +1,6 @@
 from discord.ext import commands
 import requests, re
 import discord, asyncio
-from time import sleep
 
 class PaginationView(discord.ui.View):
     

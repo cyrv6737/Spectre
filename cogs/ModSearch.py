@@ -10,7 +10,7 @@ class PaginationView(discord.ui.View):
     current_page : int = 0
     
     async def send(self, ctx):
-        self.from_message = await ctx.send(view=self)
+        self.message = await ctx.send(view=self)
         
     def create_embed(self, data, data_key):
         key = self.data_key[self.current_page]

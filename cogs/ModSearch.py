@@ -27,7 +27,7 @@ class PaginationView(discord.ui.View):
     async def update_message(self, data, data_key):
         await self.message.edit(embed=self.create_embed(data, data_key), view=self)
     
-    @discord.ui.button(label="View Mod", style=discord.ButtonStyle.primary)
+    @discord.ui.button(label="View Mod", style=discord.ButtonStyle.success)
     async def link_button(self, interaction:discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(self.mod_url, ephemeral=True)
     

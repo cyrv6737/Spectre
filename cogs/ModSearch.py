@@ -4,16 +4,16 @@ import discord, asyncio
 
 class PaginationView(discord.ui.View):
     
-    current_page : int = 1
+    current_page : int = 0
     
     async def send(self, ctx):
-        self.message = await ctx.send(view=self)
+        self.message = await ctx.send(embed=self.create_embed(self.data, self.data_key), view=self)
         
     def create_embed(self, data, data_key):
-        key = self.data_key[self.current_page - 1]
+        key = self.data_key[self.current_page]
         mod = self.data[key]
         mod_embed_desc = f"By {mod['owner']}\n{mod['description']}"
-        embed_title = f"{mod['name']} ({self.current_page}/{len(self.data_key)})"
+        embed_title = f"{mod['name']} ({self.current_page + 1}/{len(self.data_key)})"
         embed_footer = f"{mod['total_dl']} Downloads | Last updated on {mod['last_update']} (YY/MM/DD)"
         embed = discord.Embed(
             title=embed_title,

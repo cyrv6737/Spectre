@@ -70,6 +70,8 @@ class LogReading(commands.Cog):
         global oldVersion
         global modProblem
         global badMod
+        global crashCounter
+        global multiCrash
         hud = False
         callback = False
         compileErrorClientKillCallback = False
@@ -82,6 +84,8 @@ class LogReading(commands.Cog):
         oldVersion = False
         modProblem = False
         badMod : str = ""
+        crashCounter : int = 0
+        multiCrash = False
 
 
         allowed_channels = util.JsonHandler.load_channels()
@@ -168,9 +172,12 @@ class LogReading(commands.Cog):
                                     # Add these to the audio list for checking for errors
                                     audioList.append(c)
                                     
-                                if "[error] Northstar version:" in line: # Checks for first line of the crash section of the log
-                                    checkLine = lines[i - 1] # Stores the previous line (right before the crash)
-                                    if "LoadStreamPak" in checkLine: # Check for paks being loaded right before crash
+                                if "[NORTHSTAR] [error] Northstar has crashed! a minidump has been written and exception info is available below:" in line: # Checks for first line of the crash section of the log
+                                    checkLine = lines[i - 2] # Stores the previous line (right before the crash), we have to skip the version printout
+                                    crashCounter += 1
+                                    if crashCounter == 2: # More than 1 crash, flip multiCrash to true. Only needs to happen once so check for equality
+                                        multiCrash = True
+                                    elif "LoadStreamPak" in checkLine and crashCounter == 1: # Check for paks being loaded right before crash, only search if one crash
                                         # Use regex to grab the name of the pak that probably failed
                                         match = re.search(r'LoadStreamPak: (\S+)', checkLine)
                                         badStreamPakLoad = match.group(1)

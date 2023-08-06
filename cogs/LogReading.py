@@ -72,6 +72,7 @@ class LogReading(commands.Cog):
         global badMod
         global crashCounter
         global multiCrash
+        global doubleBarrelCrash
         hud = False
         callback = False
         compileErrorClientKillCallback = False
@@ -86,6 +87,7 @@ class LogReading(commands.Cog):
         badMod : str = ""
         crashCounter : int = 0
         multiCrash = False
+        doubleBarrelCrash = False
 
 
         allowed_channels = util.JsonHandler.load_channels()
@@ -184,6 +186,9 @@ class LogReading(commands.Cog):
                                         modProblem = True
                                         problemFound = True
                                         # Run back over the log to find what mod the pak is registered with
+                                        if badStreamPakLoad == "mp_weapon_shotgun_doublebarrel.starpak":
+                                            doubleBarrelCrash = True
+                                            continue
                                         for lineAgain in lines:
                                             if f"registered starpak '{badStreamPakLoad}'" in lineAgain:
                                                 match = re.search(r'Mod (\S+) registered', lineAgain)

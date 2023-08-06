@@ -4,6 +4,7 @@ import util.JsonHandler
 import asyncio
 import requests
 import os
+import re
 
 def decodetext(text, text_to_filter, text_to_filter2):
     filtered_bytes = text.replace(b'\x82', b'')
@@ -67,6 +68,8 @@ class LogReading(commands.Cog):
         global modsInstalled 
         global betterServerBrowser
         global oldVersion
+        global modProblem
+        global badMod
         hud = False
         callback = False
         compileErrorClientKillCallback = False
@@ -77,6 +80,8 @@ class LogReading(commands.Cog):
         modsInstalled = False
         betterServerBrowser = False
         oldVersion = False
+        modProblem = False
+        badMod : str = ""
 
 
         allowed_channels = util.JsonHandler.load_channels()
@@ -96,7 +101,7 @@ class LogReading(commands.Cog):
                             lines = file.readlines()
                             
                    
-                            for line in lines:
+                            for i, line in enumerate(lines):
                                 if "NorthstarLauncher version:" in line:
                                     
                                     verSplit = line.split("version:")[1]
@@ -162,6 +167,21 @@ class LogReading(commands.Cog):
                                     
                                     # Add these to the audio list for checking for errors
                                     audioList.append(c)
+                                    
+                                if "[error] Northstar version:" in line: # Checks for first line of the crash section of the log
+                                    checkLine = lines[i - 1] # Stores the previous line (right before the crash)
+                                    if "LoadStreamPak" in checkLine: # Check for paks being loaded right before crash
+                                        # Use regex to grab the name of the pak that probably failed
+                                        match = re.search(r'LoadStreamPak: (\S+)', checkLine)
+                                        badStreamPakLoad = match.group(1)
+                                        modProblem = True
+                                        problemFound = True
+                                        # Run back over the log to find what mod the pak is registered with
+                                        for lineAgain in lines:
+                                            if f"registered starpak '{badStreamPakLoad}'" in lineAgain:
+                                                match = re.search(r'Mod (\S+) registered', lineAgain)
+                                                badMod = match.group(1) # Store problematic mod in global var
+                                                break # End the loop as it is no longer useful
 
                         # Properly set up the list for actual checking
                         d = list(set(tuple(audio) for audio in audioList))
@@ -221,6 +241,9 @@ class LogReading(commands.Cog):
                             if audioProblem == True:
                                 problem.add_field(name="Fixing audio replacement conflicts", value="Please remove mods until only one of these audio mods are enabled. These names aren't perfect to what they are for the mod, however they are the file names for the mod, so you can just remove the folder matching the name from `Titanfall2/R2Northstar/mods`.", inline=False)
 
+                            if modProblem == True:
+                                problem.add_field(name="Bad mod", value=f"Northstar crashed right after attempting to load **{badMod}**")
+                            
                             problem.add_field(name="", value="Please note that I am a bot and am still heavily being worked on. There is a chance that some or all of this information is incorrect, in which case I apologize.\nIf you still encounter issues after doing this, please send another log.", inline=False)
                             await message.channel.send(embed=problem, reference=message)     
                             

@@ -84,8 +84,8 @@ class LogReading(commands.Cog):
         betterServerBrowser = False
         oldVersion = False
         modProblem = False
-        badMod : str = ""
-        crashCounter : int = 0
+        badMod = ""
+        crashCounter = 0
         multiCrash = False
         doubleBarrelCrash = False
 

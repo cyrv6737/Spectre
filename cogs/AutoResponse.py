@@ -1,9 +1,6 @@
-import datetime
-import discord
+import datetime, discord, util.JsonHandler, util.MasterStatus, re, pytesseract
 from discord.ext import commands
-import util.JsonHandler, util.MasterStatus
 from cogs.GlobalReplies import replycheck
-import re, pytesseract
 from PIL import Image
 from io import BytesIO
 

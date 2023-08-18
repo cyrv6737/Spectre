@@ -3,7 +3,9 @@ import discord
 from discord.ext import commands
 import util.JsonHandler, util.MasterStatus
 from cogs.GlobalReplies import replycheck
-import re
+import re, pytesseract
+from PIL import Image
+from io import BytesIO
 
 
 # Embed for automatically replying to potential questions about installing Northstar
@@ -119,6 +121,15 @@ class AutoResponse(commands.Cog):
                             await message.channel.send(reference=message, embed=installmods)
                             await message.channel.send("https://cdn.discordapp.com/attachments/942391932137668618/1069362595192127578/instruction_bruh.png")
                             print(f"Northstar mods installing embed reply sent")
+                            
+                        elif message.attachments:
+                            for attachment in message.attachments:
+                                if attachment.content_type.startswith('image'):
+                                    image_data = await attachment.read()
+                                    image = Image.open(BytesIO(image_data))
+                                    image_text = image.pytesseract.image_to_string(image)
+                                    if re.search("Windows protected your PC", image_text):
+                                        await message.channel.send("Windows defender moment lol", reference=message)
                             
                             
                 self.last_time = datetime.datetime.utcnow()

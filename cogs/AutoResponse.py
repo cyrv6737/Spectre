@@ -127,7 +127,7 @@ class AutoResponse(commands.Cog):
                                 if attachment.content_type.startswith('image'):
                                     image_data = await attachment.read()
                                     image = Image.open(BytesIO(image_data))
-                                    image_text = image.pytesseract.image_to_string(image)
+                                    image_text = pytesseract.image_to_string(image)
                                     if re.search("Windows protected your PC", image_text):
                                         await message.channel.send("Windows defender moment lol", reference=message)
                             
